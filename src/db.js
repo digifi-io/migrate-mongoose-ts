@@ -28,14 +28,10 @@ export default function ( collection = 'migrations', dbConnection, {typescript} 
 
   MigrationSchema.virtual('filename').get(function() {
     let basename = `${this.createdAt.getTime()}-${this.name}`;
-    if(typescript) {
-      return `${basename}.ts` 
-    };
+    if (typescript) {
+      return `${basename}.ts`
+    }
     return `${basename}.js`;
-  });
-
-  dbConnection.on('error', err => {
-    console.error(`MongoDB Connection Error: ${err}`);
   });
 
   return dbConnection.model( collection, MigrationSchema );

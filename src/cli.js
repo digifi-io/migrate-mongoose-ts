@@ -4,8 +4,8 @@ import path from 'path';
 import yargs from 'yargs';
 import 'colors';
 import dotenv from 'dotenv';
-
 import Migrator from './lib';
+import mongoose from "mongoose";
 
 dotenv.config();
 let  { argv: args } = yargs
@@ -116,71 +116,87 @@ if (!args.dbConnectionUri) {
   process.exit(1);
 }
 
-let migrator = new Migrator({
-  migrationsPath:  path.resolve(args['migrations-dir']),
-  templatePath: args['template-file'],
-  dbConnectionUri: args.dbConnectionUri,
-  es6Templates: args.es6,
-  typescript: args.typescript,
-  collectionName:  args.collection,
-  autosync: args.autosync,
-  cli: true
-});
-
-process.on('SIGINT', () => {
-  migrator.close().then(() => {
-    process.exit(0);
+const initializeMigrator = async () => {
+  const connection = await mongoose.connect(args.dbConnectionUri);
+  const migrator = new Migrator({
+    migrationsPath: path.resolve(args['migrations-dir']),
+    templatePath: args['template-file'],
+    connection,
+    es6Templates: args.es6,
+    typescript: args.typescript,
+    collectionName: args.collection,
+    autosync: args.autosync,
+    cli: true
   });
-});
+  process.on('SIGINT', () => {
+    migrator.close().then(() => {
+      process.exit(0);
+    });
+  });
 
-process.on('exit', () => {
-  // NOTE: This is probably useless since close is async and 'exit' does not wait for the code to finish before
-  // exiting ther process, so it's a race condition between exiting and closing.
-  migrator.close();
-});
+  process.on('exit', () => {
+    // NOTE: This is probably useless since close is async and 'exit' does not wait for the code to finish before
+    // exiting ther process, so it's a race condition between exiting and closing.
+    migrator.close();
+  });
 
+  return migrator;
+}
 
-let promise;
+const onFinish = () => {
+  process.exit(0);
+}
+
+const onError = (err) => {
+  console.warn(err.message.yellow);
+  if (err.message === 'There are no migrations to run') {
+    process.exit(0);
+  }
+  process.exit(1);
+}
+
 switch(command) {
   case 'create':
     validateSubArgs({ min: 1, max: 1, desc: 'You must provide only the name of the migration to create.'.red });
-    promise = migrator.create(migrationName);
-    promise.then(()=> {
-      console.log(`Migration created. Run `+ `mongoose-migrate up ${migrationName}`.cyan + ` to apply the migration.`);
-    });
+    (async () => {
+      const migrator = await initializeMigrator();
+      migrator.create(migrationName).then(onFinish).then(()=> {
+        console.log(`Migration created. Run `+ `mongoose-migrate up ${migrationName}`.cyan + ` to apply the migration.`);
+      }).catch(onError);
+    })();
     break;
   case 'up':
     validateSubArgs({ max: 1, desc: 'Command "up" takes 0 or 1 arguments'.red });
-    promise = migrator.run('up', migrationName);
+    (async () => {
+      const migrator = await initializeMigrator();
+      migrator.run('up', migrationName).then(onFinish).catch(onError);
+    })();
     break;
   case 'down':
     validateSubArgs({ min: 1, max: 1, desc: 'You must provide the name of the migration to stop at when migrating down.'.red });
-    promise = migrator.run('down', migrationName);
+    (async () => {
+      const migrator = await initializeMigrator();
+      migrator.run('down', migrationName).then(onFinish).catch(onError);
+    })();
     break;
   case 'list':
     validateSubArgs({ max: 0, desc: 'Command "list" does not take any arguments'.yellow });
-    promise = migrator.list();
+    (async () => {
+      const migrator = await initializeMigrator();
+      migrator.list().then(onFinish).catch(onError);
+    })();
     break;
   case 'prune':
     validateSubArgs({ max: 0, desc: 'Command "prune" does not take any arguments'.yellow });
-    promise = migrator.prune();
+    (async () => {
+      const migrator = await initializeMigrator();
+      migrator.prune().then(onFinish).catch(onError);
+    })();
     break;
   default:
     yargs.showHelp();
     process.exit(0);
 }
-
-promise
-  .then(() => { process.exit(0); })
-  .catch((err) => {
-    console.warn(err.message.yellow);
-    if (err.message === 'There are no migrations to run'){
-      process.exit(0);
-    }
-    process.exit(1);
-  });
-
-
 
 function validateSubArgs({ min = 0, max = Infinity, desc }) {
   const argsLen = args._.length - 1;
