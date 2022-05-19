@@ -93,7 +93,7 @@ export default class Migrator {
    * @returns {Promise} A promise that resolves when connection is closed
    */
   close() {
-    return this.connection ? this.connection.close() : Promise.resolve();
+    return this.connection ? mongoose.connection.close() : Promise.resolve();
   }
 
   /**
