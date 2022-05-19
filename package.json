@@ -1,5 +1,5 @@
 {
-  "name": "migrate-mongoose-typescript",
+  "name": "@digifi/migrate-mongoose-ts",
   "version": "4.0.0",
   "description": "A mongoose based migration framework for node with Typescript support",
   "main": "./dist/lib.js",
