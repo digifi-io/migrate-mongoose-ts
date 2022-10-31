@@ -224,10 +224,7 @@ export default class Migrator {
         await new Promise( (resolve, reject) => {
           const callPromise =  migrationFunctions[direction].call(
             this.connection.model.bind(this.connection),
-            function callback(err) {
-              if (err) return reject(err);
-              resolve();
-            }
+            this.connection,
           );
 
           if (callPromise && typeof callPromise.then === 'function') {
@@ -396,4 +393,3 @@ function fileRequired(error) {
 
 
 module.exports = Migrator;
-
