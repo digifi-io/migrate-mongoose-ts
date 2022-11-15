@@ -14,6 +14,9 @@ Promise.config({
   warnings: false
 });
 
+mongoose.set('autoCreate', false);
+mongoose.set('autoIndex', false);
+
 const es6Template =
 `
 /**
