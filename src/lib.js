@@ -192,23 +192,24 @@ export default class Migrator {
     let numMigrationsRan = 0;
     let migrationsRan = [];
 
+    if (this.es6) {
+      require('babel-register')({
+        "presets": [require("babel-preset-latest")],
+        "plugins": [require("babel-plugin-transform-runtime")]
+      });
+
+      require('babel-polyfill');
+    }
+
+    if (this.typescript) {
+      require("ts-node").register({
+        disableWarnings: true,
+        transpileOnly: true
+      });
+    }
+
     for (const migration of migrationsToRun) {
       const migrationFilePath = path.join(self.migrationPath, migration.filename);
-      if (this.es6) {
-        require('babel-register')({
-          "presets": [require("babel-preset-latest")],
-          "plugins": [require("babel-plugin-transform-runtime")]
-        });
-
-        require('babel-polyfill');
-      }
-
-      if (this.typescript) {
-        require("ts-node").register({
-          disableWarnings: true,
-          transpileOnly: true
-        });
-      }
 
       let migrationFunctions;
 
