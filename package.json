@@ -1,6 +1,6 @@
 {
   "name": "@digifi/migrate-mongoose-ts",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "description": "A mongoose based migration framework for node with Typescript support",
   "main": "./dist/lib.js",
   "scripts": {
@@ -57,7 +57,7 @@
     "dotenv": "^5.0.1",
     "inquirer": "^0.12.0",
     "mkdirp": "^0.5.1",
-    "mongoose": "^6.3.2",
+    "mongoose": "^6.11.3",
     "ts-node": "^6.0.3",
     "yargs": "^4.8.1"
   }
