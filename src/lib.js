@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import mkdirp from 'mkdirp';
+import { sync } from 'mkdirp';
 import Promise from 'bluebird';
 import 'colors';
 import mongoose from 'mongoose';
@@ -109,7 +109,8 @@ export default class Migrator {
   getMigrationFileName(basename) {
     if (this.typescript) {
       return `${basename}.ts`
-    };
+    }
+
     return `${basename}.js`;
   }
 
@@ -128,7 +129,7 @@ export default class Migrator {
       await this.sync();
       const now = Date.now();
       const newMigrationFile = this.getMigrationFileName(`${now}-${migrationName}`);
-      mkdirp.sync(this.migrationPath);
+      sync(this.migrationPath);
       fs.writeFileSync(path.join(this.migrationPath, newMigrationFile), this.template);
       // create instance in db
       await this.connection;
@@ -193,18 +194,25 @@ export default class Migrator {
     let migrationsRan = [];
 
     if (this.es6) {
-      require('babel-register')({
-        "presets": [require("babel-preset-latest")],
-        "plugins": [require("babel-plugin-transform-runtime")]
+      require('@babel/register')({
+        "presets": [require("@babel/preset-env"), {
+          "targets": {
+            "node": "current"
+          }
+        }],
+        "plugins": [require("@babel/plugin-transform-runtime")]
       });
 
-      require('babel-polyfill');
+      require('@babel/polyfill');
     }
 
     if (this.typescript) {
       require("ts-node").register({
         disableWarnings: true,
-        transpileOnly: true
+        transpileOnly: true,
+        compilerOptions: {
+          moduleResolution: 'NodeNext'
+        }
       });
     }
 
