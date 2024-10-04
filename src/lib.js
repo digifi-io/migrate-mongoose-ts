@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import mkdirp from 'mkdirp';
+import { sync } from 'mkdirp';
 import Promise from 'bluebird';
 import 'colors';
 import mongoose from 'mongoose';
@@ -17,7 +17,7 @@ Promise.config({
 mongoose.set('autoCreate', false);
 mongoose.set('autoIndex', false);
 
-const es6Template =
+const defaultTemplate =
 `
 /**
  * Make any changes you need to make to the database here
@@ -34,49 +34,25 @@ export async function down () {
 }
 `;
 
-const es5Template =
-`'use strict';
-
-/**
- * Make any changes you need to make to the database here
- */
-exports.up = function up (done) {
-  done();
-};
-
-/**
- * Make any changes that UNDO the up function side effects here (if possible)
- */
-exports.down = function down(done) {
-  done();
-};
-`;
-
-
 export default class Migrator {
   constructor({
     templatePath,
     migrationsPath = './migrations',
     dbConnectionUri,
-    es6Templates = false,
-    typescript = false,
     collectionName = 'migrations',
     autosync = false,
     cli = false,
     connection
   }) {
-    const defaultTemplate = typescript || es6Templates ?  es6Template : es5Template;
     this.template = templatePath ? fs.readFileSync(templatePath, 'utf-8') : defaultTemplate;
     this.migrationPath = path.resolve(migrationsPath);
     this.connection = connection || mongoose.createConnection(dbConnectionUri, {
       autoCreate: false,
     });
-    this.es6 = es6Templates;
-    this.typescript = typescript;
     this.collection = collectionName;
     this.autosync = autosync;
     this.cli = cli;
-    MigrationModel = MigrationModelFactory(collectionName, this.connection, {typescript});
+    MigrationModel = MigrationModelFactory(collectionName, this.connection, { typescript: true });
   }
 
   log (logString, force = false) {
@@ -107,10 +83,7 @@ export default class Migrator {
    * @return {string}
    */
   getMigrationFileName(basename) {
-    if (this.typescript) {
-      return `${basename}.ts`
-    };
-    return `${basename}.js`;
+    return `${basename}.ts`
   }
 
   /**
@@ -128,7 +101,7 @@ export default class Migrator {
       await this.sync();
       const now = Date.now();
       const newMigrationFile = this.getMigrationFileName(`${now}-${migrationName}`);
-      mkdirp.sync(this.migrationPath);
+      sync(this.migrationPath);
       fs.writeFileSync(path.join(this.migrationPath, newMigrationFile), this.template);
       // create instance in db
       await this.connection;
@@ -192,21 +165,13 @@ export default class Migrator {
     let numMigrationsRan = 0;
     let migrationsRan = [];
 
-    if (this.es6) {
-      require('babel-register')({
-        "presets": [require("babel-preset-latest")],
-        "plugins": [require("babel-plugin-transform-runtime")]
-      });
-
-      require('babel-polyfill');
-    }
-
-    if (this.typescript) {
-      require("ts-node").register({
-        disableWarnings: true,
-        transpileOnly: true
-      });
-    }
+    require("ts-node").register({
+      disableWarnings: true,
+      transpileOnly: true,
+      compilerOptions: {
+        moduleResolution: 'NodeNext'
+      }
+    });
 
     for (const migration of migrationsToRun) {
       const migrationFilePath = path.join(self.migrationPath, migration.filename);
