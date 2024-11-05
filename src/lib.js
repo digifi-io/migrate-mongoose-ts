@@ -167,10 +167,7 @@ export default class Migrator {
 
     require("ts-node").register({
       disableWarnings: true,
-      transpileOnly: true,
-      compilerOptions: {
-        moduleResolution: 'NodeNext'
-      }
+      transpileOnly: true
     });
 
     for (const migration of migrationsToRun) {
