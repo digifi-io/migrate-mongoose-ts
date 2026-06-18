@@ -1,7 +1,6 @@
 import path from 'path';
 import fs from 'fs';
 import { sync } from 'mkdirp';
-import Promise from 'bluebird';
 import 'colors';
 import mongoose from 'mongoose';
 import _ from 'lodash';
@@ -9,13 +8,6 @@ import ask from 'inquirer';
 
 import MigrationModelFactory from './db';
 let MigrationModel;
-
-Promise.config({
-  warnings: false
-});
-
-mongoose.set('autoCreate', false);
-mongoose.set('autoIndex', false);
 
 const defaultTemplate =
 `
@@ -48,6 +40,7 @@ export default class Migrator {
     this.migrationPath = path.resolve(migrationsPath);
     this.connection = connection || mongoose.createConnection(dbConnectionUri, {
       autoCreate: false,
+      autoIndex: false,
     });
     this.collection = collectionName;
     this.autosync = autosync;

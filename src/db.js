@@ -1,10 +1,6 @@
-import mongoose, { Schema }  from 'mongoose';
-import Promise from 'bluebird';
-// Factory function for a mongoose model
-mongoose.Promise = Promise;
+import { Schema } from 'mongoose';
 
 export default function ( collection = 'migrations', dbConnection, {typescript} ) {
-
   const MigrationSchema = new Schema({
     name: String,
     createdAt: Date,
@@ -28,9 +24,11 @@ export default function ( collection = 'migrations', dbConnection, {typescript} 
 
   MigrationSchema.virtual('filename').get(function() {
     let basename = `${this.createdAt.getTime()}-${this.name}`;
+
     if (typescript) {
       return `${basename}.ts`
     }
+  
     return `${basename}.js`;
   });
 

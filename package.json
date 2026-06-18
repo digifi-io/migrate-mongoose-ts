@@ -60,7 +60,7 @@
     "inquirer": "^11.1.0",
     "lodash": "^4.17.21",
     "mkdirp": "^3.0.1",
-    "mongoose": "^6.11.3",
+    "mongoose": "^7.3.3",
     "ts-node": "^10.9.2",
     "yargs": "^17.7.2"
   }
