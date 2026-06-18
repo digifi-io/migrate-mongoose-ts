@@ -10,5 +10,8 @@
 # Transpile the source from src to dist folder
 babel -d dist/ src/
 
+# Copy TypeScript declaration files
+cp src/*.d.ts dist/
+
 # Make sure the cli is executable
 chmod +x src/cli.js
