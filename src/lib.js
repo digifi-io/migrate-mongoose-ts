@@ -195,7 +195,15 @@ export default class Migrator {
 
         this.log(`${direction.toUpperCase()}:   `[direction == 'up'? 'green' : 'red'] + ` ${migration.filename} `);
 
-        await MigrationModel.where({name: migration.name}).update({$set: {state: direction}});
+        await MigrationModel.updateOne(
+          { name: migration.name },
+          {
+            $set: {
+              state: direction,
+            },
+          },
+        );
+
         migrationsRan.push(migration.toJSON());
         numMigrationsRan++;
       } catch(err) {
