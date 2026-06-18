@@ -253,19 +253,21 @@ export default class Migrator {
         migrationsToImport = answers.migrationsToImport;
       }
 
-      return Promise.map(migrationsToImport, async (migrationToImport) => {
+      await Promise.all(migrationsToImport.map(async (migrationToImport) => {
         const filePath = path.join(this.migrationPath, migrationToImport),
           timestampSeparatorIndex = migrationToImport.indexOf('-'),
           timestamp = migrationToImport.slice(0, timestampSeparatorIndex),
           migrationName = migrationToImport.slice(timestampSeparatorIndex + 1, migrationToImport.lastIndexOf('.'));
 
         this.log(`Adding migration ${filePath} into database from file system. State is ` + `DOWN`.red);
+
         const createdMigration = await MigrationModel.create({
           name: migrationName,
           createdAt: timestamp
         });
+
         return createdMigration.toJSON();
-      });
+      }));
     } catch (error) {
       this.log(`Could not synchronise migrations in the migrations folder up to the database.`.red);
       throw error;
