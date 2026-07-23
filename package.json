@@ -1,6 +1,6 @@
 {
   "name": "@digifi/migrate-mongoose-ts",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "A mongoose based migration framework for node with Typescript support",
   "main": "./dist/lib.js",
   "types": "./dist/lib.d.ts",
