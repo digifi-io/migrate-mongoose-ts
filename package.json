@@ -9,9 +9,12 @@
       "migration": ["./dist/migration.d.ts"]
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "prepublish": "scripts/prepublish.sh",
-    "postpublish": "rm -r ./dist",
+    "prepublishOnly": "scripts/prepublish.sh",
+    "postpublish": "rm -rf ./dist",
     "postversion": "git push && git push --tags",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
