@@ -117,9 +117,8 @@ if (!args.dbConnectionUri) {
 }
 
 const initializeMigrator = async () => {
-  const connection = await mongoose.connect(args.dbConnectionUri, {
-    autoCreate: false,
-  });
+  const connection = mongoose.createConnection(args.dbConnectionUri);
+  
   const migrator = new Migrator({
     migrationsPath: path.resolve(args['migrations-dir']),
     templatePath: args['template-file'],
@@ -130,6 +129,7 @@ const initializeMigrator = async () => {
     autosync: args.autosync,
     cli: true
   });
+
   process.on('SIGINT', () => {
     migrator.close().then(() => {
       process.exit(0);

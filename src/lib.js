@@ -42,6 +42,7 @@ export default class Migrator {
       autoCreate: false,
       autoIndex: false,
     });
+    
     this.collection = collectionName;
     this.autosync = autosync;
     this.cli = cli;
