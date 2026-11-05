@@ -320,7 +320,7 @@ export default class Migrator {
 
       if (migrationsToDelete.length) {
         this.log(`Removing migration(s) `, `${migrationsToDelete.join(', ')}`.cyan, ` from database`);
-        await MigrationModel.remove({
+        await MigrationModel.deleteMany({
           name: { $in: migrationsToDelete }
         });
       }
